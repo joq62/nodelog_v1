@@ -22,6 +22,8 @@
 
 %% External exports
 -export([
+	 log/4,
+	 create/1,
 	 ping/0
 	]).
 
@@ -65,7 +67,12 @@ stop()-> gen_server:call(?SERVER, {stop},infinity).
 %% @returns:State#state.service_specs_info
 %%
 %%---------------------------------------------------------------
+create(LogDir)->
+    gen_server:call(?SERVER, {create,LogDir},infinity).
 
+
+log(Level,ModuleString,Line,Msg)-> 
+    gen_server:cast(?SERVER, {log,Level,ModuleString,Line,Msg}).
 
 %% 
 %% @doc:check if service is running
@@ -104,6 +111,10 @@ init([]) ->
 %% --------------------------------------------------------------------
 
 
+handle_call({create,LogDir},_From, State) ->
+    Reply=rpc:call(node(),lib_logger,create_logger,[LogDir],5000),
+    {reply, Reply, State};
+
 handle_call({ping},_From, State) ->
     Reply=pong,
     {reply, Reply, State};
@@ -132,7 +143,15 @@ handle_call(Request, From, State) ->
 %%          {noreply, State, Timeout} |
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
-
+handle_cast({log,notice,ModuleString,Line,Msg}, State) ->
+    logger:notice(Msg,#{file=>ModuleString,line=>Line}),
+    {noreply, State};
+handle_cast({log,warning,ModuleString,Line,Msg}, State) ->
+    logger:warning(Msg,#{file=>ModuleString,line=>Line}),
+    {noreply, State};
+handle_cast({log,alert,ModuleString,Line,Msg}, State) ->
+    logger:alert(Msg,#{file=>ModuleString,line=>Line}),
+    {noreply, State};
 
 handle_cast(_Msg, State) ->
   %  rpc:cast(node(),log,log,[?Log_ticket("unmatched cast",[Msg])]),
