@@ -144,13 +144,19 @@ handle_call(Request, From, State) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 handle_cast({log,notice,ModuleString,Line,Msg}, State) ->
-    logger:notice(Msg,#{file=>ModuleString,line=>Line}),
+    R= io_lib:format("~p",[Msg]),
+    MsgAsString=lists:flatten(R),
+    logger:notice(MsgAsString,#{file=>ModuleString,line=>Line}),
     {noreply, State};
 handle_cast({log,warning,ModuleString,Line,Msg}, State) ->
-    logger:warning(Msg,#{file=>ModuleString,line=>Line}),
+    R= io_lib:format("~p",[Msg]),
+    MsgAsString=lists:flatten(R),
+    logger:warning(MsgAsString,#{file=>ModuleString,line=>Line}),
     {noreply, State};
 handle_cast({log,alert,ModuleString,Line,Msg}, State) ->
-    logger:alert(Msg,#{file=>ModuleString,line=>Line}),
+    R= io_lib:format("~p",[Msg]),
+    MsgAsString=lists:flatten(R),
+    logger:alert(MsgAsString,#{file=>ModuleString,line=>Line}),
     {noreply, State};
 
 handle_cast(_Msg, State) ->

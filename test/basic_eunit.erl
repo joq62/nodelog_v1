@@ -43,6 +43,12 @@ t1_test()->
     true=rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,"warning1"]),
     true=rpc:cast(node(),nodelog_server,log,[alert,?MODULE_STRING,?LINE,"alert1"]),
 
+    Term={error,[eexists,{?MODULE,?LINE},time()]},
+    R= io_lib:format("~p",[Term]),
+    TermAsStering=lists:flatten(R),
+  
+    true=rpc:cast(node(),nodelog_server,log,[alert,?MODULE_STRING,?LINE,TermAsStering]),
+
     
     Arg="-pa ebin  -setcookie test_cookie", 
     NewVm="96X23",
