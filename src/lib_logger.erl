@@ -38,9 +38,10 @@ log(alert,ModuleString,Line,Msg)->
 %% Description: Based on hosts.config file checks which hosts are avaible
 %% Returns: List({HostId,Ip,SshPort,Uid,Pwd}
 %% --------------------------------------------------------------------
-create_logger(LogDir)->
-    {VmId,_HostId}=misc_node:vmid_hostid(node()),    
-    LogFile=filename:join(LogDir,VmId++".log"),
+%create_logger(LogDir)->
+create_logger(LogFile)->
+ %   {VmId,_HostId}=misc_node:vmid_hostid(node()),    
+  %  LogFile=filename:join(LogDir,VmId++".log"),
     ok=logger:add_handler(my_standar_disk_h, logger_std_h,
 			  #{formatter => {logger_formatter,
 					  #{ template => [time," | ", file," | ",line," | ",level," | ",msg,"\n"]}}}),
