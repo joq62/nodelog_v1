@@ -67,8 +67,8 @@ stop()-> gen_server:call(?SERVER, {stop},infinity).
 %% @returns:State#state.service_specs_info
 %%
 %%---------------------------------------------------------------
-create(LogDir)->
-    gen_server:call(?SERVER, {create,LogDir},infinity).
+create(LogFile)->
+    gen_server:call(?SERVER, {create,LogFile},infinity).
 
 
 log(Level,ModuleString,Line,Msg)-> 
@@ -110,9 +110,8 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 
-
-handle_call({create,LogDir},_From, State) ->
-    Reply=rpc:call(node(),lib_logger,create_logger,[LogDir],5000),
+handle_call({create,LogFile},_From, State) ->
+    Reply=rpc:call(node(),lib_logger,create_logger,[LogFile],5000),
     {reply, Reply, State};
 
 handle_call({ping},_From, State) ->
