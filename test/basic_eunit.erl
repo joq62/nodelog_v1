@@ -5,7 +5,7 @@
 %%% Node end point  
 %%% Creates and deletes Pods
 %%% 
-%%% API-kube: Interface 
+%%% API-kube: Interface §
 %%% Pod consits beams from all services, app and app and sup erl.
 %%% The setup of envs is
 %%% -------------------------------------------------------------------
@@ -35,10 +35,15 @@ setup_test()->
     ok.
 
 t1_test()->
-    LogDir="logs",
+    os:cmd("rm -rf cluster1"),
+    ok=file:make_dir("cluster1"),
+    ok=file:make_dir("cluster1/logs"),
+    
+    LogFile1=filename:join(["cluster1","logs","test1.logs"]),
+ %   LogDir="logs",
     Node=node(),
     ok=rpc:call(node(),application,start,[nodelog],5000),
-    ok=rpc:call(node(),nodelog_server,create,[LogDir],5000),
+    ok=rpc:call(node(),nodelog_server,create,[LogFile1],5000),
     true=rpc:cast(node(),nodelog_server,log,[notice,?MODULE_STRING,?LINE,"notice1"]),
     true=rpc:cast(node(),nodelog_server,log,[warning,?MODULE_STRING,?LINE,"warning1"]),
     true=rpc:cast(node(),nodelog_server,log,[alert,?MODULE_STRING,?LINE,"alert1"]),
@@ -55,9 +60,11 @@ t1_test()->
      {_VmId,HostId}=misc_node:vmid_hostid(Node),    
     {ok,N1}=slave:start(HostId,NewVm,Arg),
     pong=net_adm:ping(N1),
+
+    LogFile2=filename:join(["cluster1","logs","test2.logs"]),
     
     ok=rpc:call(N1,application,start,[nodelog],5000),
-    ok=rpc:call(N1,nodelog_server,create,[LogDir],5000),
+    ok=rpc:call(N1,nodelog_server,create,[LogFile2],5000),
     true=rpc:cast(N1,nodelog_server,log,[notice,?MODULE_STRING,?LINE,"notice2"]),
     true=rpc:cast(N1,nodelog_server,log,[warning,?MODULE_STRING,?LINE,"warning2"]),
     true=rpc:cast(N1,nodelog_server,log,[alert,?MODULE_STRING,?LINE,"alert2"]),
