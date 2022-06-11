@@ -45,7 +45,7 @@
 %% External functions
 %% ====================================================================
 appl_start([])->
-    applications:start(nodelog).
+    application:start(nodelog).
 
 %% ====================================================================
 %% Server functions
