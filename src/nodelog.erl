@@ -7,7 +7,7 @@
 %%% 
 %%% Created : 10 dec 2012
 %%% -------------------------------------------------------------------
--module(nodelog_server). 
+-module(nodelog). 
 
 -behaviour(gen_server). 
 
@@ -45,7 +45,7 @@
 %% External functions
 %% ====================================================================
 appl_start([])->
-    application:start(nodelog).
+    application:start(?MODULE).
 
 %% ====================================================================
 %% Server functions

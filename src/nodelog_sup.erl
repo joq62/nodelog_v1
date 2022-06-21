@@ -30,7 +30,7 @@ init([]) ->
                  intensity => 0,
                  period => 1},
     ChildSpecs = [#{id=>nodelog,
-		   start=>{nodelog_server,start,[]}}],
+		   start=>{nodelog,start,[]}}],
     {ok, {SupFlags, ChildSpecs}}.
 
 %% internal functions
