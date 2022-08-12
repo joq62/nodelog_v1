@@ -18,10 +18,11 @@
 
 %% --------------------------------------------------------------------
 -define(SERVER,?MODULE).
-
+-define(MAX_LOG_LENGTH,100).
 
 %% External exports
 -export([
+	 read/1,
 	 log/4,
 	 create/1,
 	 appl_start/1,
@@ -38,8 +39,12 @@
 -export([init/1, handle_call/3,handle_cast/2, handle_info/2, terminate/2, code_change/3]).
 
 -record(state, {
+		notice=[],
+		warning=[],
+		alert=[]
 	
 	       }).
+
 
 %% ====================================================================
 %% External functions
@@ -69,6 +74,10 @@ stop()-> gen_server:call(?SERVER, {stop},infinity).
 %% @returns:State#state.service_specs_info
 %%
 %%---------------------------------------------------------------
+read(LogLevel)->
+    gen_server:call(?SERVER, {read,LogLevel},infinity).
+
+
 create(LogFile)->
     gen_server:call(?SERVER, {create,LogFile},infinity).
 
@@ -112,6 +121,18 @@ init([]) ->
 %%          {stop, Reason, State}            (terminate/2 is called)
 %% --------------------------------------------------------------------
 
+handle_call({read,notice},_From, State) ->
+    Reply=State#state.notice,
+    {reply, Reply, State};
+
+handle_call({read,warning},_From, State) ->
+    Reply=State#state.warning,
+    {reply, Reply, State};
+
+handle_call({read,alert},_From, State) ->
+    Reply=State#state.alert,
+    {reply, Reply, State};
+
 handle_call({create,LogFile},_From, State) ->
     Reply=rpc:call(node(),lib_logger,create_logger,[LogFile],5000),
     {reply, Reply, State};
@@ -148,17 +169,46 @@ handle_cast({log,notice,ModuleString,Line,Msg}, State) ->
     R= io_lib:format("~p",[Msg]),
     MsgAsString=lists:flatten(R),
     logger:notice(MsgAsString,#{file=>ModuleString,line=>Line}),
-    {noreply, State};
+    Len=list_length:start(State#state.notice),
+    io:format("notice Len= ~p~n",[{Len,?MODULE,?LINE}]),
+    if
+	Len<?MAX_LOG_LENGTH->
+	    NewState=State#state{notice=[{erlang:system_time(microsecond),ModuleString,Line,MsgAsString}|State#state.notice]};
+	true->
+	    Templist=lists:delete(lists:last(State#state.notice),State#state.notice),
+	    NewState=State#state{notice=[{erlang:system_time(microsecond),ModuleString,Line,MsgAsString}|Templist]}
+    end,
+    {noreply,NewState};
+
 handle_cast({log,warning,ModuleString,Line,Msg}, State) ->
     R= io_lib:format("~p",[Msg]),
     MsgAsString=lists:flatten(R),
     logger:warning(MsgAsString,#{file=>ModuleString,line=>Line}),
-    {noreply, State};
+    Len=list_length:start(State#state.warning),
+    io:format("waning Len= ~p~n",[{Len,?MODULE,?LINE}]),
+    if
+	Len<?MAX_LOG_LENGTH->
+	    NewState=State#state{warning=[{erlang:system_time(microsecond),ModuleString,Line,MsgAsString}|State#state.warning]};
+	true->
+	    Templist=lists:delete(lists:last(State#state.warning),State#state.warning),
+	    NewState=State#state{warning=[{erlang:system_time(microsecond),ModuleString,Line,MsgAsString}|Templist]}
+    end,
+    {noreply,NewState};
+
 handle_cast({log,alert,ModuleString,Line,Msg}, State) ->
     R= io_lib:format("~p",[Msg]),
     MsgAsString=lists:flatten(R),
     logger:alert(MsgAsString,#{file=>ModuleString,line=>Line}),
-    {noreply, State};
+    Len=list_length:start(State#state.alert),
+    io:format("alert Len= ~p~n",[{Len,?MODULE,?LINE}]),
+    if
+	Len<?MAX_LOG_LENGTH->
+	    NewState=State#state{alert=[{erlang:system_time(microsecond),ModuleString,Line,MsgAsString}|State#state.alert]};
+	true->
+	    Templist=lists:delete(lists:last(State#state.alert),State#state.alert),
+	    NewState=State#state{alert=[{erlang:system_time(microsecond),ModuleString,Line,MsgAsString}|Templist]}
+    end,
+    {noreply,NewState};
 
 handle_cast(_Msg, State) ->
   %  rpc:cast(node(),log,log,[?Log_ticket("unmatched cast",[Msg])]),
