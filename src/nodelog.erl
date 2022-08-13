@@ -170,7 +170,7 @@ handle_cast({log,notice,ModuleString,Line,Msg}, State) ->
     MsgAsString=lists:flatten(R),
     logger:notice(MsgAsString,#{file=>ModuleString,line=>Line}),
     Len=list_length:start(State#state.notice),
-    io:format("notice Len= ~p~n",[{Len,?MODULE,?LINE}]),
+ %   io:format("notice Len= ~p~n",[{Len,?MODULE,?LINE}]),
     if
 	Len<?MAX_LOG_LENGTH->
 	    NewState=State#state{notice=[{erlang:system_time(microsecond),ModuleString,Line,MsgAsString}|State#state.notice]};
@@ -185,7 +185,7 @@ handle_cast({log,warning,ModuleString,Line,Msg}, State) ->
     MsgAsString=lists:flatten(R),
     logger:warning(MsgAsString,#{file=>ModuleString,line=>Line}),
     Len=list_length:start(State#state.warning),
-    io:format("waning Len= ~p~n",[{Len,?MODULE,?LINE}]),
+  %  io:format("waning Len= ~p~n",[{Len,?MODULE,?LINE}]),
     if
 	Len<?MAX_LOG_LENGTH->
 	    NewState=State#state{warning=[{erlang:system_time(microsecond),ModuleString,Line,MsgAsString}|State#state.warning]};
@@ -200,7 +200,7 @@ handle_cast({log,alert,ModuleString,Line,Msg}, State) ->
     MsgAsString=lists:flatten(R),
     logger:alert(MsgAsString,#{file=>ModuleString,line=>Line}),
     Len=list_length:start(State#state.alert),
-    io:format("alert Len= ~p~n",[{Len,?MODULE,?LINE}]),
+  %  io:format("alert Len= ~p~n",[{Len,?MODULE,?LINE}]),
     if
 	Len<?MAX_LOG_LENGTH->
 	    NewState=State#state{alert=[{erlang:system_time(microsecond),ModuleString,Line,MsgAsString}|State#state.alert]};
